@@ -3,5 +3,6 @@ CREATE TABLE public.settings (
 	prefix varchar NOT NULL DEFAULT '!'::character varying,
 	welcome_chn_id int8 NULL,
 	welcome_msg varchar NULL,
+	auto_role_id int8 NULL,
 	CONSTRAINT settings_pk PRIMARY KEY (g_id)
 );
