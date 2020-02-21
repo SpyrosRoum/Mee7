@@ -127,4 +127,8 @@ dmypy.json
 
 .vscode/
 
-mee7/DATA/
+mee7/DATA/DB_HOST.txt
+mee7/DATA/DB_PASS.txt
+mee7/DATA/DB_PORT.txt
+mee7/DATA/TOKEN.txt
+
