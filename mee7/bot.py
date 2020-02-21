@@ -27,16 +27,29 @@ DB_PORT = open('mee7/DATA/DB_PORT.txt', 'r').readline().strip()
 DB_PASSWORD = open('mee7/DATA/DB_PASS.txt', 'r').readline().strip()
 
 
-async def create_db_pool():
-    # TODO change host and password before delivering
-    bot.pg_con = await asyncpg.create_pool(host=DB_HOST, port=DB_PORT, database="mee7", user="postgres", password=DB_PASSWORD)
-    print("Connected to database")
-
 @bot.event
 async def on_ready():
     print('Logged in as')
     print(bot.user.name)
     print('------')
+
+
+async def create_db_pool():
+    # TODO change host and password before delivering
+    bot.pg_con = await asyncpg.create_pool(host=DB_HOST, port=DB_PORT, database="mee7", user="postgres", password=DB_PASSWORD)
+    print("Connected to database")
+
+async def get_auto_roles():
+    roles = bot.pg_con.fetch(
+        """
+        SELECT g_id, auto_role_id
+          FROM settings
+        """
+    )
+
+    bot.roles = dict()
+    for role in roles:
+        bot.roles[role['g_id']] = role['auto_role_id']
 
 
 for cog in os.listdir("./mee7/cogs"):
@@ -50,4 +63,5 @@ for cog in os.listdir("./mee7/cogs"):
 
 
 bot.loop.run_until_complete(create_db_pool())
+bot.loop.run_until_complete(get_auto_roles())
 bot.run(TOKEN)
