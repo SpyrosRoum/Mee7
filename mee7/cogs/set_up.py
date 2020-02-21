@@ -61,5 +61,30 @@ class SetUp(commands.Cog, name="Set up"):
 
         await ctx.send(f"`{msg}` will be sent when someone joins if you have set up the welcome channel.")
 
+    @welcome.command(brief='Set the role for people who join, leave empty to de-activate it')
+    @commands.has_permissions(administrator=True)
+    async def role(self, ctx, role: discord.Role=None):
+        """role (role)"""
+        await self.bot.pg_con.execute(
+            """
+                INSERT INTO settings (g_id, auto_role_id)
+                     VALUES ($1, $2)
+                ON CONFLICT (g_id)
+                DO
+                    UPDATE
+                       SET auto_role_id = EXCLUDED.auto_role_id
+                """, ctx.guild.id, role.id
+        )
+
+        if role is not None:
+            await ctx.send(f"{role.name} will be given when someone joins.")
+
+            self.bot.roles[ctx.guild.id] = role.id
+        else:
+            await ctx.send("There will be no role given to new members")
+
+            self.bot.roles[ctx.guild.id] = None
+
+
 def setup(bot):
     bot.add_cog(SetUp(bot))
