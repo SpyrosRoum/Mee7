@@ -6,3 +6,11 @@ CREATE TABLE public.settings (
 	auto_role_id int8 NULL,
 	CONSTRAINT settings_pk PRIMARY KEY (g_id)
 );
+
+CREATE TABLE public.members (
+	g_id int8 NOT NULL,
+	m_id int8 NOT NULL,
+	warnings int NOT NULL DEFAULT 0,
+	CONSTRAINT members_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id)
+);
+CREATE UNIQUE INDEX members_g_id_idx ON public.members (g_id,m_id);
