@@ -40,7 +40,7 @@ async def create_db_pool():
     print("Connected to database")
 
 async def get_auto_roles():
-    roles = bot.pg_con.fetch(
+    roles = await bot.pg_con.fetch(
         """
         SELECT g_id, auto_role_id
           FROM settings
