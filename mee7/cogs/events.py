@@ -14,6 +14,17 @@ class Events(commands.Cog):
         if role is not None:
             await member.add_roles(role, reason="Auto role, given upon entry")
 
+    @commands.Cog.listener()
+    async def on_guild_join(self, guild):
+        await self.bot.pg_con.execute(
+            """
+            INSERT INTO settings (g_id)
+                 VALUES ($1)
+            """, guild.id
+        )
+
+    # TODO on guild_remove event?
+
 
 def setup(bot):
     bot.add_cog(Events(bot))
