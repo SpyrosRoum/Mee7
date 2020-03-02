@@ -12,6 +12,16 @@ CREATE TABLE IF NOT EXISTS public.members (
 	g_id int8 NOT NULL,
 	m_id int8 NOT NULL,
 	warnings int NOT NULL DEFAULT 0,
-	CONSTRAINT members_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id)
+	CONSTRAINT members_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE
 );
 CREATE UNIQUE INDEX IF NOT EXISTS members_g_id_idx ON public.members (g_id,m_id);
+
+
+CREATE TABLE IF NOT EXISTS public.store (
+	g_id int8 NOT NULL,
+	item varchar NOT NULL,
+	price float NOT NULL,
+	description varchar NULL,
+	CONSTRAINT store_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE
+);
+CREATE UNIQUE INDEX IF NOT EXISTS store_g_id_idx ON public.store (g_id,item);
