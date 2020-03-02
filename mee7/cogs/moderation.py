@@ -89,9 +89,9 @@ class Moderation(commands.Cog):
         await ctx.invoke(self.unmute, member)
 
     @commands.command(brief='Give a warning to someone')
-    # TODO permissions
-    async def warn(self, ctx, member: discord.Member):
-        """warn [member]"""
+    @commands.has_permissions(manage_messages=True)
+    async def warn(self, ctx, member: discord.Member, reason=None):
+        """warn [member] (reason)"""
         warnings = await self.bot.pg_con.fetchval(
             """
             INSERT INTO members (g_id, m_id, warnings)
@@ -104,10 +104,10 @@ class Moderation(commands.Cog):
             """, ctx.guild.id, member.id, 1
         )
 
-        await ctx.send(f"{member.mention} you have been warned and have {warnings} warnings")
+        await ctx.send(f"{member.mention} you have been warned {f'[{reason}] ' if reason else ''}and have {warnings} warnings")
 
     @commands.command(brief='Remove a warning from someone')
-    # TODO permissions
+    @commands.has_permissions(manage_messages=True)
     async def unwarn(self, ctx, member: discord.Member):
         """unwarn [member]"""
         warnings = await self.bot.pg_con.fetchval(
