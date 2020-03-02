@@ -37,6 +37,10 @@ async def on_ready():
 async def create_db_pool():
     # TODO change host and password before delivering
     bot.pg_con = await asyncpg.create_pool(host=DB_HOST, port=DB_PORT, database="mee7", user="postgres", password=DB_PASSWORD)
+    with open("mee7/DATA/schema.psql", 'r') as file:
+        schema = file.read()
+        await bot.pg_con.execute(schema)
+
     print("Connected to database")
 
 async def get_auto_roles():
