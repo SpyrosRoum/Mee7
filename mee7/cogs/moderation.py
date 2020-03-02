@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 
+import asyncio
+
 from utils import create_pages, Nembed_warnings
 
 class Moderation(commands.Cog):
@@ -19,15 +21,41 @@ class Moderation(commands.Cog):
     async def ban(self, ctx, member: discord.Member, *, reason="No reason"):
         """ban [member]"""
         await member.ban(reason=reason)
-        await ctx.send(f"{member.mention} banned by {ctx.author}. [{reason}]")
+        await ctx.send(f"{member} banned by {ctx.author}. [{reason}]")
+
+    @commands.command(brief='Unban a member')
+    @commands.has_permissions(ban_members=True)
+    async def unban(self, ctx, user: discord.User):
+        """unban [user]"""
+        try:
+            await ctx.guild.unban(user)
+            await ctx.send(f"Unbaned {user}")
+        except Exception:
+            await ctx.send("I wasn't able to do that :/")
+
+
+    @commands.command(brief='Temporarily bans a user from the server')
+    @commands.has_permissions(ban_members=True)
+    async def tempban(self, ctx, member: discord.User, duration, *, reason=None):
+        """tempban [member] [duration in hour(s)] (reason)"""
+        await ctx.guild.ban(user=member, reason=reason)
+        await ctx.send(f"Banned {member} for {duration} hours")
+
+        #* Should I do somehting other than sleep?
+        await asyncio.sleep(duration*3600)
+
+        await ctx.guild.unban(member, reason="End of tempban")
 
     @commands.command(aliases=['clear'], brief="Purge a channel")
     @commands.has_permissions(manage_messages=True)
-    async def purge(self, ctx, amount: int):
-        """purge [amount]"""
-        channel = ctx.channel
-        await channel.purge(limit=amount+1)
-        await ctx.send(f"{amount} messages deleted")
+    async def purge(self, ctx, amount: int, member: discord.Member=None):
+        """purge [amount] (member)"""
+        if member is not None:
+            await ctx.channel.purge(limit=amount, check=lambda msg: msg.author == member)
+        else:
+            await ctx.channel.purge(limit=amount+1)
+
+        await ctx.send(f"{amount} messages deleted", delete_after=10)
 
     @commands.command(brief="Mute a member")
     @commands.has_permissions(manage_messages=True)
@@ -35,7 +63,7 @@ class Moderation(commands.Cog):
         """mute [member]"""
         muted_role = discord.utils.get(ctx.guild.roles, name="Muted")
         if muted_role is None:
-            # TODO: test this is a correct role
+            # TODO test this is a correct role
             muted_role = await ctx.guild.create_role(permissions=discord.Permissions(send_messages=False), name="Muted")
 
         await ctx.send(f"{member.mention} has been muted")
@@ -50,6 +78,15 @@ class Moderation(commands.Cog):
 
         await member.remove_roles(muted_role)
         await ctx.send(f"{member.mention} has been unmuted")
+
+    @commands.command(brief='Temporarily mute a member')
+    @commands.has_permissions(manage_messages=True)
+    async def tempmute(self, ctx, member: discord.Member, duration: float):
+        """tempmute [member] [duation in hours]"""
+        await ctx.invoke(self.mute, member)
+        #* Should I do somehting other than sleep?
+        await asyncio.sleep(duration*3600)
+        await ctx.invoke(self.unmute, member)
 
     @commands.command(brief='Give a warning to someone')
     # TODO permissions
