@@ -9,7 +9,7 @@ class SetUp(commands.Cog, name="Set up"):
     @commands.group(invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def welcome(self, ctx):
-        # TODO: test
+        # TODO test
         pass
 
     @welcome.command(aliases=['chn'], brief='Set the channel for the welcome message')
@@ -85,6 +85,25 @@ class SetUp(commands.Cog, name="Set up"):
 
             self.bot.roles[ctx.guild.id] = None
 
+    @commands.command(brief='Set the suggestions channel, leave empy to remove it')
+    @commands.has_permissions(administrator=True)
+    async def suggestions_chn(self, ctx, channel: discord.TextChannel=None):
+        """suggestions_chn (channel)"""
+        await self.bot.pg_con.execute(
+            """
+            INSERT INTO settings (g_id, suggestion_chn_id)
+                 VALUES ($1, $2)
+            ON CONFLICT (g_id)
+            DO
+                UPDATE
+                   SET suggestion_chn_id = EXCLUDED.suggestion_chn_id
+            """, ctx.guild.id, channel.id if channel is not None else None
+        )
+
+        if channel is None:
+            await ctx.send("There won't be a suggestions channel anymore")
+        else:
+            await ctx.send(f"The suggestions channel is {channel}")
 
 def setup(bot):
     bot.add_cog(SetUp(bot))

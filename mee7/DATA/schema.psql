@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS public.settings (
 	welcome_chn_id int8 NULL,
 	welcome_msg varchar NULL,
 	auto_role_id int8 NULL,
+	suggestion_chn_id int8 NULL,
 	CONSTRAINT settings_pk PRIMARY KEY (g_id)
 );
 
