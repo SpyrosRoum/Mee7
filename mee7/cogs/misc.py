@@ -26,7 +26,14 @@ class Misc(commands.Cog):
             await ctx.send("It looks like the suggestions channel has been removed")
             return
 
-        await channel.send(f"{ctx.author} says:\n{suggestion}")
+        embed = discord.Embed(timestamp=ctx.message.created_at, description=f"{ctx.author} says:\n{suggestion}")
+        msg = await channel.send(embed=embed)
+
+        await msg.add_reaction('✅')
+        await msg.add_reaction('❎')
+
+        # TODO add the message to the db with the og author
+        # check reacts, send dm to og author
 
 def setup(bot):
     bot.add_cog(Misc(bot))
