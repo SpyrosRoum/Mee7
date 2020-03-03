@@ -157,6 +157,15 @@ class Moderation(commands.Cog):
             )
             await create_pages(ctx, warnings, Nembed_warnings, "Warnings closed")
 
+    @commands.command(brief='Make an announcements')
+    @commands.has_permissions(administrator=True)
+    async def announce(self, ctx, channel: discord.TextChannel, *, text):
+        """announce [channel] [announcement]"""
+        embed = discord.Embed(title="Announcement", description=text, color=ctx.author.color, timestamp=ctx.message.created_at)
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+
+        await channel.send(embed=embed)
+
     # TODO lock, unlock (channels)
 
 def setup(bot):
