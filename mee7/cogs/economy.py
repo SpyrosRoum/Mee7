@@ -48,7 +48,7 @@ class Economy(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def remove(self, ctx, name):
         """remove [name]"""
-        await self.bot.pg_con.execute(
+        r = await self.bot.pg_con.execute(
             """
             DELETE FROM store
                   WHERE g_id = $1
@@ -56,7 +56,11 @@ class Economy(commands.Cog):
             """, ctx.guild.id, name.lower()
         )
 
-        await ctx.send(f"Done")
+        if r[-1] == '0':
+            await ctx.send("I didn't find the item")
+        else:
+            await ctx.send(f"Removed {name} from the store")
+
 
 def setup(bot):
     bot.add_cog(Economy(bot))
