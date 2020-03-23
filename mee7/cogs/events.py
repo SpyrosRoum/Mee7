@@ -46,7 +46,45 @@ class Events(commands.Cog):
             """, guild.id
         )
 
-    # TODO on guild_remove event?
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        # Custom commands
+        if message.author.bot:
+            return
+
+        prefix = await self.bot.get_prefix(message)
+        if not message.content.startswith(tuple(prefix)):
+            return
+
+        ctx = await self.bot.get_context(message)
+        if ctx.command is not None:
+            return
+
+        name = message.content.replace(ctx.prefix, '', 1).split()[0]
+        cmd = await self.bot.pg_con.fetchrow(
+            """
+            SELECT *
+              FROM commands
+             WHERE g_id = $1
+               AND cmd_name = $2
+            """, message.guild.id, name
+        )
+        print("here")
+        if cmd is None:
+            return
+
+        if cmd['cmd_type'] == 'text':
+            await self.execute_text_type(message, cmd)
+
+    async def execute_text_type(self, message, cmd):
+        if cmd['cooldown'] is not None:
+            # TODO Check cooldown
+            pass
+
+        if cmd['reply_in_dms']:
+            await message.author.send(cmd['reply_with'])
+        else:
+            await message.channel.send(cmd['reply_with'])
 
 
 def setup(bot):

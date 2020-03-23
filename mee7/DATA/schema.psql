@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS public.settings (
 	CONSTRAINT settings_pk PRIMARY KEY (g_id)
 );
 
+
 CREATE TABLE IF NOT EXISTS public.members (
 	g_id int8 NOT NULL,
 	m_id int8 NOT NULL,
@@ -25,3 +26,16 @@ CREATE TABLE IF NOT EXISTS public.store (
 	CONSTRAINT store_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE
 );
 CREATE UNIQUE INDEX IF NOT EXISTS store_g_id_idx ON public.store (g_id,item);
+
+
+CREATE TABLE IF NOT EXISTS public.commands (
+	g_id int8 NOT NULL,
+	cmd_name varchar NOT NULL,
+	cmd_type varchar NOT NULL,
+	description varchar DEFAULT NULL,
+	cooldown int DEFAULT NULL,
+	reply_in_dms boolean NOT NULL,
+	reply_with varchar DEFAULT NULL,
+	CONSTRAINT commands_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE
+);
+CREATE UNIQUE INDEX IF NOT EXISTS commands_g_id_idx ON public.commands (g_id,cmd_name);

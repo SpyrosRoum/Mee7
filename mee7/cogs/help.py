@@ -10,6 +10,7 @@ class Help(commands.Cog):
 
     def Nembed(self, ctx, page: int, pages, cogs, cogsD):
         # TODO: Fix ugly embeds
+        # TODO Add custom commands
         embed = discord.Embed(
             description=f"Prefix: `{ctx.prefix}`\n`[argument]` = required, `(argument)` = optional",
             color=ctx.author.color,
