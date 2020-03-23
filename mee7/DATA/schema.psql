@@ -39,3 +39,13 @@ CREATE TABLE IF NOT EXISTS public.commands (
 	CONSTRAINT commands_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE
 );
 CREATE UNIQUE INDEX IF NOT EXISTS commands_g_id_idx ON public.commands (g_id,cmd_name);
+
+
+CREATE TABLE IF NOT EXISTS public.cooldown (
+	g_id int8 NOT NULL,
+	m_id int8 NOT NULL,
+	cmd_name varchar NOT NULL,
+	did_at int8 NOT NULL,
+	CONSTRAINT cooldown_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE
+);
+CREATE UNIQUE INDEX IF NOT EXISTS cooldown_g_id_idx ON public.cooldown (g_id,m_id,cmd_name);
