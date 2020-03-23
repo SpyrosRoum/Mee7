@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 
+async def is_bot_owner(ctx):
+    return await ctx.bot.is_owner(ctx.author)
 
 class SetUp(commands.Cog, name="Set up"):
     def __init__(self, bot):
@@ -104,6 +106,43 @@ class SetUp(commands.Cog, name="Set up"):
             await ctx.send("There won't be a suggestions channel anymore")
         else:
             await ctx.send(f"The suggestions channel is {channel}")
+
+    @commands.command(aliases=['pre'], brief="Change the prefix for the server (default is `!`)")
+    @commands.check(lambda ctx: ctx.author.id == ctx.guild.owner.id)
+    async def prefix(self, ctx, *, pre: str):
+        '''prefix [prefix]'''
+        await self.bot.pg_con.execute(
+            """
+            INSERT INTO settings (g_id, prefix)
+                 VALUES ($1, $2)
+            ON CONFLICT (g_id)
+            DO
+                UPDATE
+                   SET prefix = EXCLUDED.prefix
+            """, ctx.guild.id, pre
+        )
+
+        await ctx.send(f"New prefix: `{pre}`")
+
+    @commands.command(hidden=True, brief="Insert all servers in db")
+    @commands.check(is_bot_owner)
+    async def find(self, ctx, this: bool = False):
+        """find (this: bool)"""
+        print(this)
+        if this:
+            await self.bot.pg_con.execute(
+                """
+                INSERT INTO settings (g_id)
+                     VALUES ($1)
+                """, ctx.guild.id
+            )
+        else:
+            await self.bot.pg_con.executemany(
+                """
+                INSERT INTO settings (g_id)
+                     VALUES ($1)
+                """, [(guild.id,) for guild in self.bot.guilds]
+            )
 
 def setup(bot):
     bot.add_cog(SetUp(bot))
