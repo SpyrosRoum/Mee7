@@ -35,6 +35,35 @@ class CustomCommands(commands.Cog):
         else:
             return (True, True) # Exists and is custom
 
+    def process_cooldown(self, cooldown: str):
+        """
+        cooldown should be in the form of:
+        int seconds/minutes/days
+        """
+        cooldown = cooldown.split()
+        if len(cooldown) > 2:
+            return None
+
+        try:
+            number = int(cooldown[0])
+            if number <= 0:
+                raise ValueError
+        except ValueError:
+            return None
+
+        if (time_period := cooldown[1].lower()) not in ['sec', 'second', 'seconds', 'min', 'minute', 'minutes', 'hour', 'hours']:
+            return None
+
+        return self.period_to_seconds(time_period, number)
+
+    def period_to_seconds(self, period, number):
+        if period in ['sec', 'second', 'seconds']:
+            return number
+        if period in ['min', 'minute', 'minutes']:
+            return number * 60
+        if period in ['hour', 'hours']:
+            return number * 60 * 60
+
 
     async def get_basic_command_info(self, ctx):
         def check(msg):
@@ -58,13 +87,13 @@ class CustomCommands(commands.Cog):
             await ctx.send("Do you want to set a __cooldown__ for this command? [y/n]")
             yes_no = (await self.bot.wait_for('message', timeout=30.0, check=check)).content.lower()
             if yes_no in ['yes', 'y']:
-                await ctx.send("How many seconds will the cooldown be?")
+                await ctx.send("What is the cooldown per user? [number seconds/minutes/hours]")
                 cooldown = (await self.bot.wait_for('message', timeout=30.0, check=check)).content
-                try:
-                    cooldown = int(cooldown)
-                except ValueError:
+
+                # Get cooldown in seconds
+                cooldown = self.process_cooldown(cooldown)
+                if cooldown is None:
                     await ctx.send(f"Invalid input `{cooldown}`. There will be no cooldown for now but you can edit it later")
-                    cooldown = None
             else:
                 cooldown = None
 

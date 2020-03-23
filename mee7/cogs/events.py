@@ -1,3 +1,5 @@
+import time
+
 import discord
 from discord.ext import commands
 
@@ -76,10 +78,41 @@ class Events(commands.Cog):
         if cmd['cmd_type'] == 'text':
             await self.execute_text_type(message, cmd)
 
+    async def check_cooldown(self, message: discord.Message, cmd):
+        last_did = await self.bot.pg_con.fetchval(
+            """
+            SELECT did_at
+                FROM cooldown
+                WHERE g_id = $1
+                AND m_id = $2
+                AND cmd_name = $3
+            """, message.guild.id, message.author.id, cmd['cmd_name']
+        )
+        if last_did is None or last_did + cmd['cooldown'] < time.time():
+            return (True, 0) # Meaning the can do it
+
+        else:
+            return (False, (last_did + cmd['cooldown']) - int(time.time()))
+
+    async def update_cooldown(self, message, cmd):
+        await self.bot.pg_con.execute(
+            """
+            INSERT INTO cooldown (g_id, m_id, cmd_name, did_at)
+                    VALUES ($1, $2, $3, $4)
+            ON CONFLICT (g_id, m_id, cmd_name)
+            DO
+                UPDATE
+                    SET did_at = EXCLUDED.did_at
+            """, message.guild.id, message.author.id, cmd['cmd_name'], int(time.time())
+        )
+
     async def execute_text_type(self, message, cmd):
         if cmd['cooldown'] is not None:
-            # TODO Check cooldown
-            pass
+            if has_cooldown := (await self.check_cooldown(message, cmd)):
+                await self.update_cooldown(message, cmd)
+            else:
+                seconds_left = has_cooldown[1]
+                await message.channel.send(f"You are in cooldown. try again in {seconds_left} seconds")
 
         if cmd['reply_in_dms']:
             await message.author.send(cmd['reply_with'])
