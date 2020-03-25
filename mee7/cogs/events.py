@@ -9,7 +9,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        if (role_id := self.bot.roles[member.guild.id]) is None:
+        if (role_id := self.bot.roles.get(member.guild.id)) is None:
             return
 
         role = member.guild.get_role(role_id)
