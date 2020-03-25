@@ -9,7 +9,7 @@ class Misc(commands.Cog):
     @commands.command(brief="Make a suggestion for the server")
     async def suggest(self, ctx, *, suggestion):
         """suggest [suggestion]"""
-        chn_id = self.bot.pg_con.fetchval(
+        chn_id = await self.bot.pg_con.fetchval(
             """
             SELECT suggestion_chn_id
               FROM settings
