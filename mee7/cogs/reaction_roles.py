@@ -8,6 +8,62 @@ class ReactionRoles(commands.Cog, name="Reaction roles"):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        # TODO test
+        role_id = await self.bot.pg_con.fetchval(
+            """
+            SELECT role_id
+              FROM react_role
+             WHERE g_id = $1
+               AND msg_id = $2
+               AND emoji = $3
+            """, payload.guild_id, payload.message_id, str(payload.emoji)
+        )
+
+        if role_id is None:
+            return
+
+        guild = self.bot.get_guild(payload.guild_id)
+        role = guild.get_role(role_id)
+
+        if role is None:
+            return
+
+        member = guild.get_member(payload.user_id)
+        try:
+            await member.add_roles(role)
+        except Exception:
+            pass
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload):
+        # TODO test
+        role_id = await self.bot.pg_con.fetchval(
+            """
+            SELECT role_id
+              FROM react_role
+             WHERE g_id = $1
+               AND msg_id = $2
+               AND emoji = $3
+            """, payload.guild_id, payload.message_id, str(payload.emoji)
+        )
+
+        if role_id is None:
+            return
+
+        guild = self.bot.get_guild(payload.guild_id)
+        role = guild.get_role(role_id)
+
+        if role is None:
+            return
+
+        member = guild.get_member(payload.user_id)
+        try:
+            await member.remove_roles(role)
+        except Exception:
+            pass
+
     @commands.command(brief="Set up a message for adding roles when reacting")
     async def add_message(self, ctx, *, text: commands.clean_content):
         """add_message [the message]"""
