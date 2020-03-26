@@ -8,16 +8,16 @@ class SetUp(commands.Cog, name="Set up"):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group(invoke_without_command=True)
+    @commands.group(brief="Ask for the help of this command for more", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def welcome(self, ctx):
-        # TODO test
+        """welcome [sub command]"""
         pass
 
     @welcome.command(aliases=['chn'], brief='Set the channel for the welcome message')
     @commands.has_permissions(administrator=True)
     async def channel(self, ctx, channel: discord.TextChannel=None):
-        """channel (channel)"""
+        """welcome channel (channel)"""
         if channel is None:
             await self.bot.pg_con.execute(
                 """
@@ -49,7 +49,7 @@ class SetUp(commands.Cog, name="Set up"):
     @welcome.command(aliases=['msg'], brief='Set the welcome message')
     @commands.has_permissions(administrator=True)
     async def message(self, ctx, *, msg):
-        """message [message]"""
+        """welcome message [message]"""
         await self.bot.pg_con.execute(
             """
                 INSERT INTO settings (g_id, welcome_msg)
@@ -66,7 +66,7 @@ class SetUp(commands.Cog, name="Set up"):
     @welcome.command(brief='Set the role for people who join, leave empty to de-activate it')
     @commands.has_permissions(administrator=True)
     async def role(self, ctx, role: discord.Role=None):
-        """role (role)"""
+        """welcome role (role)"""
         await self.bot.pg_con.execute(
             """
                 INSERT INTO settings (g_id, auto_role_id)
@@ -79,7 +79,7 @@ class SetUp(commands.Cog, name="Set up"):
         )
 
         if role is not None:
-            await ctx.send(f"{role.name} will be given when someone joins.")
+            await ctx.send(f"`{role.name}` will be given when someone joins.")
 
             self.bot.roles[ctx.guild.id] = role.id
         else:
