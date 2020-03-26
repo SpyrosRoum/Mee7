@@ -58,12 +58,13 @@ class ReactionRoles(commands.Cog, name="Reaction roles"):
         """add_message [the message]"""
         await ctx.message.delete()
 
-        instr = await ctx.send("Send me an emoji that will be used for a role and the role that it will add. [👦 @some_role]\n"
+        instr = await ctx.send("Send me an emoji that will be used for a role and the role that it will add. [👦 some_role] "
+                               "where `some_role` is a mention, id or name of a role\n"
                                "Note that if you say a second time the same emoji, it will over-write the previous one\n"
                                "Send `stop` if you don't want to add any other emojis")
 
         emoji_role = dict()
-        messages = []
+        messages_to_delete = []
         while True:
             try:
                 msg = await self.bot.wait_for("message", check=lambda msg: msg.author==ctx.author and msg.channel==ctx.message.channel, timeout=120)
@@ -75,30 +76,30 @@ class ReactionRoles(commands.Cog, name="Reaction roles"):
                 await msg.delete()
                 break
 
-            if len(content_lst := msg.content.split()) > 2:
-                await ctx.send("Please send something to the format of:\nemoji @role", delete_after=120)
+            if len(content_lst := msg.content.split()) != 2:
+                await ctx.send("Please send something to the format of:\nemoji role", delete_after=120)
                 await msg.delete()
                 continue
 
-            messages.append(msg)
+            messages_to_delete.append(msg)
             emoji = content_lst[0]
             if emoji in emoji_role:
-                msg = await ctx.send("You can't have the same emoji more than once in the same message")
-                messages.append(msg)
+                tmp = await ctx.send("You can't have the same emoji more than once in the same message")
+                messages_to_delete.append(tmp)
                 continue
 
             await msg.add_reaction('👍')
 
-            try:
-                role_id = msg.raw_role_mentions[0]
-            except IndexError:
-                await ctx.send("Please send messages in the format of `emoji @role`", delete_after=120)
+            role = await commands.RoleConverter().convert(ctx, content_lst[1])
+            if role is None:
+                tmp = await ctx.send("Please send messages to the format of\n`emoji role`")
+                messages_to_delete.append(tmp)
                 continue
 
-            emoji_role[emoji] = role_id
+            emoji_role[emoji] = role.id
 
         async with msg.channel.typing():
-            for message in messages:
+            for message in messages_to_delete:
                 await message.delete()
                 await asyncio.sleep(.25)
 
