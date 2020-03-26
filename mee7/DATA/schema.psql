@@ -49,3 +49,13 @@ CREATE TABLE IF NOT EXISTS public.cooldown (
 	CONSTRAINT cooldown_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE
 );
 CREATE UNIQUE INDEX IF NOT EXISTS cooldown_g_id_idx ON public.cooldown (g_id,m_id,cmd_name);
+
+
+CREATE TABLE IF NOT EXISTS public.react_role (
+	g_id int8 NOT NULL,
+	msg_id int8 NOT NULL,
+	emoji varchar NOT NULL,
+	role_id int8 NOT NULL,
+	CONSTRAINT react_role_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE
+);
+CREATE UNIQUE INDEX IF NOT EXISTS react_role_g_id_idx ON public.react_role (g_id,msg_id,emoji);
