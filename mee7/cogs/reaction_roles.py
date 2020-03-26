@@ -6,7 +6,7 @@ from discord.ext import commands
 
 class ReactionRoles(commands.Cog, name="Reaction roles"):
     def __init__(self, bot):
-        self.bot=bot
+        self.bot = bot
 
     @commands.command(brief="Set up a message for adding roles when reacting")
     async def add_message(self, ctx, *, text: commands.clean_content):
@@ -69,9 +69,7 @@ class ReactionRoles(commands.Cog, name="Reaction roles"):
             for emoji in emoji_role.keys():
                 await msg.add_reaction(emoji)
 
-
         await instr.delete()
-
 
 
 
