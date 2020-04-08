@@ -177,10 +177,10 @@ class Rss(commands.Cog):
         await ctx.send("If you have set an rss channel for your server, you will get updates for this feed starting.. now")
         await self.update_feed(g_id=ctx.guild.id, feed=feed, feed_id=feed_id)
 
-    @commands.command(brief="Remove an rss feed based on link")
+    @commands.command(aliases=['rem_rss'], brief="Remove an rss feed based on link")
     @commands.has_permissions(administrator=True)
     async def remove_rss(self, ctx, link):
-        """add_rss [link]"""
+        """remove_rss [link]"""
         feed_id = await self.bot.pg_con.fetchval(
             """
             DELETE FROM rss_feeds
