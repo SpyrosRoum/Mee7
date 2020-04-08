@@ -5,8 +5,32 @@ CREATE TABLE IF NOT EXISTS public.settings (
 	welcome_msg varchar NULL,
 	auto_role_id int8 NULL,
 	suggestion_chn_id int8 NULL,
+	rss_chn_id int8 NULL,
 	CONSTRAINT settings_pk PRIMARY KEY (g_id)
 );
+
+CREATE TABLE IF NOT EXISTS public.rss_feeds (
+	g_id int8 NOT NULL,
+	feed_name varchar NOT NULL, -- Given by user
+	feed_link varchar NOT NULL, -- Also by user
+	feed_id SERIAL NOT NULL,
+
+	CONSTRAINT rss_feeds_pk PRIMARY KEY (feed_id),
+	CONSTRAINT rss_feeds_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE
+);
+CREATE UNIQUE INDEX IF NOT EXISTS rss_feeds_g_id_name ON public.rss_feeds (g_id,feed_name);
+
+CREATE TABLE IF NOT EXISTS public.rss_entries (
+	feed_id int NOT NULL,
+	entry_id varchar NOT NULL,
+	title varchar NOT NULL,
+	summary varchar NOT NULL,
+	link varchar NOT NULL,
+	published varchar NOT NULL,
+
+	CONSTRAINT rss_entries_fk FOREIGN KEY (feed_id) REFERENCES public.rss_feeds(feed_id) ON DELETE CASCADE
+);
+CREATE UNIQUE INDEX IF NOT EXISTS rss_entries_entry_id ON public.rss_entries (entry_id);
 
 
 CREATE TABLE IF NOT EXISTS public.members (

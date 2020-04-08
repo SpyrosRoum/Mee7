@@ -107,6 +107,25 @@ class SetUp(commands.Cog, name="Set up"):
         else:
             await ctx.send(f"The suggestions channel is {channel}")
 
+    @commands.command(brief="Set the rss channel feed. Don't mention a channel to disable rss")
+    async def rss_chn(self, ctx, channel: discord.TextChannel = None):
+        """rss_chn (channel)"""
+        await self.bot.pg_con.execute(
+            """
+            INSERT INTO settings (g_id, rss_chn_id)
+                 VALUES ($1, $2)
+            ON CONFLICT (g_id)
+            DO
+                UPDATE
+                   SET rss_chn_id = EXCLUDED.rss_chn_id
+            """, ctx.guild.id, channel.id
+        )
+
+        if channel is None:
+            await ctx.send("You have disabled your rss feed")
+        else:
+            await ctx.send(f"The rss feed will go in {channel.mention}")
+
     @commands.command(aliases=['pre'], brief="Change the prefix for the server (default is `!`)")
     @commands.check(lambda ctx: ctx.author.id == ctx.guild.owner.id)
     async def prefix(self, ctx, *, pre: str):
