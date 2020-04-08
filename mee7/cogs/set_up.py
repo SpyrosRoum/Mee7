@@ -105,7 +105,7 @@ class SetUp(commands.Cog, name="Set up"):
         if channel is None:
             await ctx.send("There won't be a suggestions channel anymore")
         else:
-            await ctx.send(f"The suggestions channel is {channel}")
+            await ctx.send(f"The suggestions channel is {channel.mention}")
 
     @commands.command(name="rss_chn", brief="Set the rss channel feed. Don't mention a channel to disable rss")
     @commands.has_permissions(administrator=True)
