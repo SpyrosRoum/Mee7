@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS public.rss_feeds (
 	CONSTRAINT rss_feeds_pk PRIMARY KEY (feed_id),
 	CONSTRAINT rss_feeds_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE
 );
-CREATE UNIQUE INDEX IF NOT EXISTS rss_feeds_g_id_name ON public.rss_feeds (g_id,feed_name);
+CREATE UNIQUE INDEX IF NOT EXISTS rss_feeds_g_id_link ON public.rss_feeds (g_id,feed_link);
 
 CREATE TABLE IF NOT EXISTS public.rss_entries (
 	feed_id int NOT NULL,

@@ -107,8 +107,9 @@ class SetUp(commands.Cog, name="Set up"):
         else:
             await ctx.send(f"The suggestions channel is {channel}")
 
-    @commands.command(brief="Set the rss channel feed. Don't mention a channel to disable rss")
-    async def rss_chn(self, ctx, channel: discord.TextChannel = None):
+    @commands.command(name="rss_chn", brief="Set the rss channel feed. Don't mention a channel to disable rss")
+    @commands.has_permissions(administrator=True)
+    async def rss_channel(self, ctx, channel: discord.TextChannel = None):
         """rss_chn (channel)"""
         await self.bot.pg_con.execute(
             """
