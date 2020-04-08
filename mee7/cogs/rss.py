@@ -80,10 +80,16 @@ class Rss(commands.Cog):
         else:
             to_send = []
             for entry in feed.entries:
-                if entry['id'] in [past_entry['entry_id'] for past_entry in last_entries]:
+                ids = [past_entry['entry_id'] for past_entry in last_entries]
+                if entry['id'] in ids:
+                    print("break")
                     break
                 else:
                     to_send.append(entry)
+
+            if len(to_send) == 0:
+                return
+
             for entry in to_send:
                 await self.send_entry(entry, chn)
                 await asyncio.sleep(.25)
@@ -97,8 +103,6 @@ class Rss(commands.Cog):
                 )
             else:
                 for i, past_entry in enumerate(last_entries[::-1]):
-                    if i == len(to_send) - 1:
-                        break
                     await self.bot.pg_con.execute(
                         """
                         DELETE FROM rss_entries
@@ -106,6 +110,8 @@ class Rss(commands.Cog):
                                 AND entry_id = $2
                         """, feed_id, past_entry['entry_id']
                     )
+                    if i == len(to_send) - 1:
+                        break
             await self.bot.pg_con.executemany(
                 """
                 INSERT INTO rss_entries (feed_id, entry_id, title, summary, link, published)
