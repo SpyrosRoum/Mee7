@@ -20,7 +20,7 @@ class ReactionRoles(commands.Cog, name="Reaction roles"):
         )
 
         if role_id is None:
-            return
+            return None, None
 
         guild = self.bot.get_guild(payload.guild_id)
         return (guild.get_role(role_id), guild)
