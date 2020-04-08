@@ -14,8 +14,8 @@ class Rss(commands.Cog):
 
     def format_html(self, text):
         text = text.replace("<p>", "    ")
-        text = text.reaplce("<\\p>", "\n")
-        text = text.reaplce("<\\br>", "\n")
+        text = text.replace("<\\p>", "\n")
+        text = text.replace("<\\br>", "\n")
         return text
 
     async def send_entry(self, entry, chn: discord.TextChannel):
