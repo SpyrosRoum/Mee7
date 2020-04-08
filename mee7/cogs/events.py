@@ -35,7 +35,7 @@ class Events(commands.Cog):
             return
 
         welcome_msg = welcome_msg.replace("{user}", member.mention)
-        welcome_msg = welcome_msg.replace("{server}", member.guild)
+        welcome_msg = welcome_msg.replace("{server}", member.guild.name)
 
         await welcome_chn.send(welcome_msg)
 
