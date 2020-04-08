@@ -150,10 +150,10 @@ class Moderation(commands.Cog):
         else:
             warnings = await self.bot.pg_con.fetch(
                 """
-                SELECT warnings
+                SELECT warnings, m_id
                   FROM members
                  WHERE g_id = $1
-                """
+                """, ctx.guild.id
             )
             await create_pages(ctx, warnings, Nembed_warnings, "Warnings closed")
 
