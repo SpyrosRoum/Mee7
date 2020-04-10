@@ -32,8 +32,17 @@ class Misc(commands.Cog):
         await msg.add_reaction('✅')
         await msg.add_reaction('❎')
 
-        # TODO add the message to the db with the og author
-        # check reacts, send dm to og author
+        summary = suggestion
+
+        if len(summary) > 200:
+            summary = summary[:200] + "..."
+
+        await self.bot.pg_con.execute(
+            """
+            INSERT INTO suggestions (g_id, m_id, msg_id, summary)
+                 VALUES ($1, $2, $3, $4)
+            """, ctx.guild.id, ctx.author.id, msg.id, summary
+        )
 
 def setup(bot):
     bot.add_cog(Misc(bot))

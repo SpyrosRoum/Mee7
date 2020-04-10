@@ -119,6 +119,59 @@ class Events(commands.Cog):
         else:
             await message.channel.send(cmd['reply_with'])
 
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        # For suggestions
+        guild_id = payload.guild_id
+        msg_id = payload.message_id
+        user_id = payload.user_id
+
+        suggestion = await self.bot.pg_con.fetchrow(
+            """
+            SELECT m_id, summary
+              FROM suggestions
+             WHERE g_id = $1
+               AND msg_id = $2
+               AND approved IS NULL
+            """, guild_id, msg_id
+        )
+
+        if suggestion is None:
+            return
+
+        if str(payload.emoji) not in ['✅', '❎']:
+            return
+
+        guild = self.bot.get_guild(guild_id)
+        member = guild.get_member(user_id)
+
+        if not member.guild_permissions.administrator:
+            return
+
+        approved = str(payload.emoji) == '✅'
+
+        await self.bot.pg_con.execute(
+            """
+            UPDATE suggestions
+               SET approved = $2
+             WHERE msg_id = $1
+            """, msg_id, approved
+        )
+
+        author = guild.get_member(suggestion['m_id'])
+        if author is None:
+            return
+
+        try:
+            if approved:
+                txt = f"Yay, your suggestion in {guild.name} to `{suggestion['summory']}` **got approved**"
+                await author.send(txt)
+            else:
+                txt = f"I'm sorry, your suggestion in {guild.name} to `{suggestion['summary']}` **got declined**"
+                await author.send(txt)
+        except discord.Forbidden:
+            pass
+
 
 def setup(bot):
     bot.add_cog(Events(bot))

@@ -83,3 +83,15 @@ CREATE TABLE IF NOT EXISTS public.react_role (
 	CONSTRAINT react_role_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE
 );
 CREATE UNIQUE INDEX IF NOT EXISTS react_role_g_id_idx ON public.react_role (g_id,msg_id,emoji);
+
+
+CREATE TABLE IF NOT EXISTS public.suggestions (
+	g_id bigint NOT NULL,
+	m_id bigint NOT NULL,
+	msg_id bigint NOT NULL,
+	approved boolean NULL DEFAULT null,
+	summary varchar NOT NULL,
+	CONSTRAINT suggestions_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE
+
+);
+CREATE UNIQUE INDEX IF NOT EXISTS suggestions_g_id_idx ON public.suggestions (g_id,msg_id);
