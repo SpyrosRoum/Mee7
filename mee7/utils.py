@@ -2,26 +2,47 @@ import time
 import asyncio
 import discord
 
-def Nembed_warnings(ctx, page: int, pages, members: list, cur: int):
+def Nembed_warnings(ctx, page: int, pages: int, members, cur: int):
     embed = discord.Embed(
         color=ctx.author.color,
         timestamp=ctx.message.created_at
     )
     embed.set_author(name="Warnings", icon_url=ctx.bot.user.avatar_url)
 
+    # If there somehow is no text, don't error
     text = ""
     for member_record in members[cur:cur+10]:
-        try:
-            member = ctx.guild.get_member(member_record['m_id'])
-            text += (f"Member: {member.mention}\n"
-                    f"Warnings: {member_record['warnings']}\n"
-                    f"---------\n")
-        except AttributeError:
+        member = ctx.guild.get_member(member_record['m_id'])
+        if member is None:
             continue
+        text += (f"Member: {member.mention}\n"
+                f"Warnings: {member_record['warnings']}\n"
+                f"----------\n")
 
-    embed.description = text
+    embed.description = text or "None"
     embed.set_footer(text=f"Page {page+1}/{pages}")
+
     return embed, cur
+
+
+def Nembed_rss_feeds(ctx, page: int, pages: int, feeds, cur: int):
+    embed = discord.Embed(
+        color=ctx.author.color,
+        timestamp=ctx.message.created_at
+    )
+    embed.set_author(name="Rss Feeds", icon_url=ctx.bot.user.avatar_url)
+
+    text = ""
+    for feed_record in feeds:
+        text += (f"Title: {feed_record['name']}\n"
+                 f"Url: {feed_record['link']}\n"
+                 f"----------\n")
+
+    embed.description = text or "None"
+    embed.set_footer(text=f"Page {page+1}/{pages}")
+
+    return embed, cur
+
 
 async def create_pages(ctx, lst, func, end_text):
     pages = 1 + (len(lst) // 10) if (len(lst) % 10) >= 1 else (len(lst) // 10)
@@ -37,16 +58,16 @@ async def create_pages(ctx, lst, func, end_text):
     await msg.add_reaction('❌')
 
     def check(r, user):
-        return user.id != ctx.bot.bot.user.id and ctx.guild.id == r.message.guild.id and r.message.id == msg.id
+        return user != ctx.bot.user and r.message.id == msg.id
 
     t_end = time.time() + 120
     while time.time() < t_end:
         try:
-            res, user = await ctx.bot.bot.wait_for('reaction_add', check=check, timeout=60.0)
+            reaction, user = await ctx.bot.wait_for('reaction_add', check=check, timeout=60.0)
         except asyncio.TimeoutError:
             continue
 
-        if str(res.emoji) == "➡":
+        if str(reaction.emoji) == "➡":
             await msg.remove_reaction('➡', user)
             page += 1
 
@@ -58,7 +79,7 @@ async def create_pages(ctx, lst, func, end_text):
             new_embed, cur = func(ctx, page, pages, lst, cur + 10)
             await msg.edit(embed=new_embed)
 
-        elif str(res.emoji) == "⬅":
+        elif str(reaction.emoji) == "⬅":
             await msg.remove_reaction('⬅', user)
             page -= 1
             if page < 0:
@@ -68,7 +89,7 @@ async def create_pages(ctx, lst, func, end_text):
             new_embed, cur = func(ctx, page, pages, lst, cur - 10)
             await msg.edit(embed=new_embed)
 
-        elif str(res.emoji) == "❌":
+        elif str(reaction.emoji) == "❌":
             await msg.remove_reaction("❌", user)
             break
 
