@@ -6,6 +6,9 @@ from discord.ext import commands
 import feedparser
 import aiohttp
 
+from utils import create_pages, Nembed_rss_feeds
+
+
 class Rss(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -208,6 +211,28 @@ class Rss(commands.Cog):
         )
 
         await ctx.send("You won't be getting updates for that feed anymore")
+
+    @commands.command(aiases=["rss_feeds"], brief="A list of the rss feeds you have")
+    async def rss_list(self, ctx):
+        """rss_list"""
+        feeds = await self.bot.pg_con.fetch(
+            """
+            SELECT feed_name AS name, feed_link AS link
+              FROM rss_feeds
+             WHERE g_id = $1
+            """, ctx.guild.id
+        )
+        if feeds == []:
+            embed = discord.Embed(
+                color=ctx.author.color,
+                timestamp=ctx.message.created_at,
+                description="You don't have any feeds"
+            )
+            await ctx.send(embed=embed)
+            return
+
+        await create_pages(ctx, feeds, Nembed_rss_feeds, "Feeds closed")
+
 
 
 
