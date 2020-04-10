@@ -85,7 +85,6 @@ class Rss(commands.Cog):
             for entry in feed.entries:
                 ids = [past_entry['entry_id'] for past_entry in last_entries]
                 if entry['id'] in ids:
-                    print("break")
                     break
                 else:
                     to_send.append(entry)
