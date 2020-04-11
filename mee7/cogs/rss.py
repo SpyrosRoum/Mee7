@@ -160,8 +160,8 @@ class Rss(commands.Cog):
 
     @commands.command(brief="Add an rss feed. If no name is given, the title from the feed will be used")
     @commands.has_permissions(administrator=True)
-    async def add_rss(self, ctx, link, *, name=None):
-        """add_rss [link] (name)"""
+    async def rss_add(self, ctx, link, *, name=None):
+        """rss_add [link] (name)"""
         for _ in range(2):
             feed = await self.get_feed(link)
             if feed is not None:
@@ -185,10 +185,10 @@ class Rss(commands.Cog):
         await ctx.send("If you have set an rss channel for your server, you will get updates for this feed starting.. now")
         await self.update_feed(g_id=ctx.guild.id, feed=feed, feed_id=feed_id)
 
-    @commands.command(aliases=['rem_rss'], brief="Remove an rss feed based on link")
+    @commands.command(aliases=['rss_rem', 'rss_rm'], brief="Remove an rss feed based on link")
     @commands.has_permissions(administrator=True)
-    async def remove_rss(self, ctx, link):
-        """remove_rss [link]"""
+    async def rss_remove(self, ctx, link):
+        """rss_remove [link]"""
         feed_id = await self.bot.pg_con.fetchval(
             """
             DELETE FROM rss_feeds
