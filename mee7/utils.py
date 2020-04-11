@@ -44,6 +44,25 @@ def Nembed_rss_feeds(ctx, page: int, pages: int, feeds, cur: int):
     return embed, cur
 
 
+def Nembed_triggers(ctx, page: int, pages: int, triggers, cur: int):
+    embed = discord.Embed(
+        color=ctx.author.color,
+        timestamp=ctx.message.created_at
+    )
+    embed.set_author(name="Triggers", icon_url=ctx.bot.user.avatar_url)
+
+    text = ""
+    for trigger_record in triggers:
+        text += (f"Trigger: {trigger_record['trigger']}\n"
+                 f"Response: {trigger_record['response']}\n"
+                 f"----------\n")
+
+    embed.description = text or "None"
+    embed.set_footer(text=f"Page {page+1}/{pages}")
+
+    return embed, cur
+
+
 async def create_pages(ctx, lst, func, end_text):
     pages = 1 + (len(lst) // 10) if (len(lst) % 10) >= 1 else (len(lst) // 10)
     page = 0

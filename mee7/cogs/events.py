@@ -7,6 +7,23 @@ class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def check_trigger(self, message):
+        triggers = await self.bot.pg_con.fetch(
+            """
+            SELECT trigger_ as trigger, response
+              FROM triggers
+             WHERE g_id = $1
+            """, message.guild.id
+        )
+
+        if triggers == []:
+            return
+
+        for trigger_record in triggers:
+            if trigger_record['trigger'] in message.content.lower():
+                await message.channel.send(f"{message.author.mention} {trigger_record['response']}")
+                return
+
     @commands.Cog.listener()
     async def on_member_join(self, member):
         if (role_id := self.bot.roles.get(member.guild.id)) is None:
@@ -56,6 +73,7 @@ class Events(commands.Cog):
 
         prefix = await self.bot.get_prefix(message)
         if not message.content.startswith(tuple(prefix)):
+            await self.check_trigger(message)
             return
 
         ctx = await self.bot.get_context(message)
