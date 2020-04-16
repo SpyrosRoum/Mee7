@@ -104,3 +104,15 @@ CREATE TABLE IF NOT EXISTS public.triggers (
 	CONSTRAINT triggers_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE
 );
 CREATE UNIQUE INDEX IF NOT EXISTS triggers_g_id_trigger ON public.triggers (g_id,trigger_);
+
+
+CREATE TABLE IF NOT EXISTS public.currency (
+	g_id bigint NOT NULL,
+	"name" varchar NOT NULL,
+	short varchar NULL,
+	CONSTRAINT currency_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE
+);
+CREATE UNIQUE INDEX IF NOT EXISTS currency_g_id_idx ON public.currency (g_id);
+
+-- Column comments
+COMMENT ON COLUMN public.currency.short IS 'Defaults to collumn name';
