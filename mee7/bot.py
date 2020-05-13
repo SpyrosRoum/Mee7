@@ -21,10 +21,10 @@ async def get_prefix(bot, message):
 bot = commands.Bot(command_prefix=get_prefix)
 bot.remove_command('help')
 
-TOKEN = open('mee7/DATA/TOKEN.txt', 'r').readline().strip()
-DB_HOST = open('mee7/DATA/DB_HOST.txt', 'r').readline().strip()
-DB_PORT = open('mee7/DATA/DB_PORT.txt', 'r').readline().strip()
-DB_PASSWORD = open('mee7/DATA/DB_PASS.txt', 'r').readline().strip()
+TOKEN = open('./DATA/TOKEN.txt', 'r').readline().strip()
+DB_HOST = open('./DATA/DB_HOST.txt', 'r').readline().strip()
+DB_PORT = open('./DATA/DB_PORT.txt', 'r').readline().strip()
+DB_PASSWORD = open('./DATA/DB_PASS.txt', 'r').readline().strip()
 
 
 @bot.event
@@ -37,7 +37,7 @@ async def on_ready():
 async def create_db_pool():
     # TODO change host and password before delivering
     bot.pg_con = await asyncpg.create_pool(host=DB_HOST, port=DB_PORT, database="mee7", user="postgres", password=DB_PASSWORD)
-    with open("mee7/DATA/schema.psql", 'r') as file:
+    with open("./DATA/schema.psql", 'r') as file:
         schema = file.read()
         await bot.pg_con.execute(schema)
 
@@ -56,7 +56,7 @@ async def get_auto_roles():
         bot.roles[role['g_id']] = role['auto_role_id']
 
 
-for cog in os.listdir("./mee7/cogs"):
+for cog in os.listdir("./cogs"):
     if cog.endswith(".py") and not cog.startswith("_"):
         try:
             cog = f"cogs.{cog.replace('.py', '')}"
