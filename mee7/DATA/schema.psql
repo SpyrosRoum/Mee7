@@ -1,21 +1,19 @@
 CREATE TABLE IF NOT EXISTS public.settings (
-	g_id int8 NOT NULL,
+	g_id int8 PRIMARY KEY,
 	prefix varchar NOT NULL DEFAULT '!'::character varying,
 	welcome_chn_id int8 NULL,
 	welcome_msg varchar NULL,
 	auto_role_id int8 NULL,
 	suggestion_chn_id int8 NULL,
-	rss_chn_id int8 NULL,
-	CONSTRAINT settings_pk PRIMARY KEY (g_id)
+	rss_chn_id int8 NULL
 );
 
 CREATE TABLE IF NOT EXISTS public.rss_feeds (
 	g_id int8 NOT NULL,
 	feed_name varchar NOT NULL, -- Given by user
 	feed_link varchar NOT NULL, -- Also by user
-	feed_id SERIAL NOT NULL,
+	feed_id int PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 
-	CONSTRAINT rss_feeds_pk PRIMARY KEY (feed_id),
 	CONSTRAINT rss_feeds_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE
 );
 CREATE UNIQUE INDEX IF NOT EXISTS rss_feeds_g_id_link ON public.rss_feeds (g_id,feed_link);
@@ -34,6 +32,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS rss_entries_entry_id ON public.rss_entries (en
 
 
 CREATE TABLE IF NOT EXISTS public.members (
+    id int8 PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 	g_id int8 NOT NULL,
 	m_id int8 NOT NULL,
 	warnings int NOT NULL DEFAULT 0,
@@ -41,8 +40,8 @@ CREATE TABLE IF NOT EXISTS public.members (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS members_g_id_idx ON public.members (g_id,m_id);
 
-
 CREATE TABLE IF NOT EXISTS public.store (
+    item_id int8 PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 	g_id int8 NOT NULL,
 	item varchar NOT NULL,
 	price float NOT NULL,
@@ -114,5 +113,18 @@ CREATE TABLE IF NOT EXISTS public.currency (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS currency_g_id_idx ON public.currency (g_id);
 
+
+CREATE TABLE IF NOT EXISTS public.inventories (
+	id int8 NOT NULL,
+	item_id int8 NOT NULL,
+	amount int NOT NULL DEFAULT 1,
+	CONSTRAINT inventories_fk FOREIGN KEY (id) REFERENCES public.members(id) ON DELETE CASCADE,
+	CONSTRAINT inventories_fk_1 FOREIGN KEY (item_id) REFERENCES public.store(item_id)
+);
+
+
+
 -- Column comments
+COMMENT ON COLUMN public.inventories.id IS 'The internal id of the member';
 COMMENT ON COLUMN public.currency.short IS 'Defaults to collumn name';
+COMMENT ON COLUMN public.members.id IS 'Id to be used as a primary key internally';
