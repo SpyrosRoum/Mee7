@@ -35,7 +35,9 @@ CREATE TABLE IF NOT EXISTS public.members (
     id int8 PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 	g_id int8 NOT NULL,
 	m_id int8 NOT NULL,
+	money int8 NOT NULL DEFAULT 0 CONSTRAINT positive_money CHECK (money >= 0),
 	warnings int NOT NULL DEFAULT 0,
+
 	CONSTRAINT members_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE
 );
 CREATE UNIQUE INDEX IF NOT EXISTS members_g_id_idx ON public.members (g_id,m_id);
