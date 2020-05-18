@@ -65,7 +65,7 @@ class SetUpEco(commands.Cog, name="Set up Economy"):
             r = await self.bot.pg_con.execute(
                 """
                 UPDATE currency
-                   SET name = $2,
+                   SET name = $2
                  WHERE g_id = $1
                 """, ctx.guild.id, name
             )
@@ -73,7 +73,7 @@ class SetUpEco(commands.Cog, name="Set up Economy"):
             r = await self.bot.pg_con.execute(
                 """
                 UPDATE currency
-                   SET short = $2,
+                   SET short = $2
                  WHERE g_id = $1
                 """, ctx.guild.id, short
             )
