@@ -125,19 +125,23 @@ CREATE TABLE IF NOT EXISTS public.inventories (
 );
 
 
-CREATE TABLE IF NOT EXISTS public.eco_settings
-(
+CREATE TABLE IF NOT EXISTS public.eco_settings (
+    id int PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 	g_id int8 not null,
 	cmd_name varchar not null,
 	min float8 not null,
 	max float8 not null,
-	CONSTRAINT eco_settings_settings_g_id_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE,
+	CONSTRAINT eco_settings_settings_g_id_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE
 );
 
-create unique index eco_settings_g_id_cmd_name_uindex
-	on eco_settings (g_id, cmd_name);
+create unique index IF NOT EXISTS eco_settings_g_id_cmd_name_uidx on public.eco_settings (g_id, cmd_name);
 
 
+CREATE TABLE IF NOT EXISTS public.eco_responses (
+    id int NOT NULL,
+    resp varchar not null,
+    CONSTRAINT eco_resp_fk FOREIGN KEY (id) REFERENCES public.eco_settings(id) ON DELETE CASCADE
+);
 
 -- Column comments
 COMMENT ON COLUMN public.inventories.id IS 'The internal id of the member';
