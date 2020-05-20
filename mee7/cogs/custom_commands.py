@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 
 
-class CustomCommands(commands.Cog):
+class CustomCommands(commands.Cog, name="Custom Commands"):
     def __init__(self, bot):
         self.bot=bot
 
