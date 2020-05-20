@@ -129,8 +129,8 @@ CREATE TABLE IF NOT EXISTS public.eco_settings (
     id int PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 	g_id int8 not null,
 	cmd_name varchar not null,
-	min float8 not null,
-	max float8 not null,
+	min float8 not null DEFAULT 10,
+	max float8 not null DEFAULT 100,
 	CONSTRAINT eco_settings_settings_g_id_fk FOREIGN KEY (g_id) REFERENCES public.settings(g_id) ON DELETE CASCADE
 );
 
