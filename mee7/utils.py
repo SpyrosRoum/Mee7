@@ -1,6 +1,7 @@
 import time
 import asyncio
 import discord
+from discord.ext import commands
 
 def Nembed_warnings(ctx, page: int, pages: int, members, cur: int):
     embed = discord.Embed(
@@ -125,3 +126,27 @@ async def create_pages(ctx, lst, func, end_text):
                         icon_url=ctx.bot.user.avatar_url)
 
     await msg.edit(embed=embed)
+
+async def get_short(bot: commands.Bot, g_id: int) -> str:
+    """return the short for the currency in this server or \"\""""
+    short = await bot.pg_con.fetchval(
+        """
+        SELECT short
+          FROM currency
+         WHERE g_id = $1
+        """, g_id
+    )
+
+    return short or ""
+
+async def get_name(bot: commands.Bot, g_id: int) -> str:
+    """return the name for the currency in this server or \"\""""
+    name = await bot.pg_con.fetchval(
+        """
+        SELECT name
+          FROM currency
+         WHERE g_id = $1
+        """, g_id
+    )
+
+    return name or ""

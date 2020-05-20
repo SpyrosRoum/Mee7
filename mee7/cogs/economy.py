@@ -1,3 +1,5 @@
+from utils import get_short
+
 import discord
 from discord.ext import commands
 
@@ -21,14 +23,7 @@ class Economy(commands.Cog):
             RETURNING money
             """, ctx.guild.id, member.id, amount
         )
-        short = await self.bot.pg_con.fetchval(
-            """
-            SELECT short
-              FROM currency
-             WHERE g_id = $1 
-            """
-        )
-        short = short or ""
+        short = await get_short(self.bot, ctx.guild.id)
         await ctx.send(f"{member} now has {new_money}{short}")
 
 
