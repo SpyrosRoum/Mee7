@@ -13,6 +13,28 @@ asyncpg = "^0.20.1"
 autopep8 = "^1.5.1"
 pylint = "^2.4.4"
 
+[tool.pylint.master]
+# Disable missing doc-strings,
+# Unnecessary "else" after "raise/return",
+disable = ["C0114", "C0115", "C0116", "R1705", "R1720", "W0511", "R0401", "R0902"]
+
+[tool.pylint.basic]
+good-names = ["r", "db", "kw", "i", "e", "c"]
+
+[tool.pylint.format]
+max-line-length = 120
+
+[tool.pylint.design]
+min-public-methods = 0
+max-args = 8
+
+[tool.pylint.reports]
+reports = "no"
+score = "no"
+output-format = "colorized"
+
+
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
+

@@ -1,4 +1,3 @@
-import discord
 from discord.ext import commands
 
 
@@ -67,10 +66,10 @@ class Store(commands.Cog):
         # TODO try to do this more efficient for the db
         item = await self.bot.pg_con.fetchrow(
             """
-            SELECT item_id, item, price, description 
+            SELECT item_id, item, price, description
               FROM store
              WHERE g_id = $1
-               AND item = $2 
+               AND item = $2
             """, ctx.guild.id, name.lower()
         )
 
@@ -79,10 +78,10 @@ class Store(commands.Cog):
 
         member_r = await self.bot.pg_con.fetchrow(
             """
-            INSERT INTO members (g_id, m_id) 
+            INSERT INTO members (g_id, m_id)
             VALUES ($1, $2)
             ON CONFLICT (g_id, m_id)
-            DO NOTHING 
+            DO NOTHING
             RETURNING id, money
             """, ctx.guild.id, ctx.author.id
         )
@@ -105,8 +104,8 @@ class Store(commands.Cog):
                 INSERT INTO inventories (id, item_id, amount)
                 VALUES ($1, $2, $3)
                 ON CONFLICT (id, item_id)
-                DO UPDATE 
-                SET amount = amount + excluded.amount               
+                DO UPDATE
+                SET amount = amount + excluded.amount
                 RETURNING amount
                 """, member_r['id'], item['item_id'], amount
             )

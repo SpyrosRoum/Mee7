@@ -1,6 +1,5 @@
 import asyncio
 
-import discord
 from discord.ext import commands
 
 
@@ -23,7 +22,7 @@ class ReactionRoles(commands.Cog, name="Reaction roles"):
             return None, None
 
         guild = self.bot.get_guild(payload.guild_id)
-        return (guild.get_role(role_id), guild)
+        return guild.get_role(role_id), guild
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -58,16 +57,20 @@ class ReactionRoles(commands.Cog, name="Reaction roles"):
         """add_message [the message]"""
         await ctx.message.delete()
 
-        instr = await ctx.send("Send me an emoji that will be used for a role and the role that it will add. [👦 some_role] "
-                               "where `some_role` is a mention, id or name of a role\n"
-                               "Note that if you say a second time the same emoji, it will over-write the previous one\n"
-                               "Send `stop` if you don't want to add any other emojis")
+        txt = ("Send me an emoji that will be used for a role and the role that it will add. [👦 some_role] "
+               "where `some_role` is a mention, id or name of a role\n"
+               "Note that if you say a second time the same emoji, it will over-write the previous one\n"
+               "Send `stop` if you don't want to add any other emojis")
+        instr = await ctx.send(txt)
 
         emoji_role = dict()
         messages_to_delete = []
         while True:
             try:
-                msg = await self.bot.wait_for("message", check=lambda msg: msg.author==ctx.author and msg.channel==ctx.message.channel, timeout=120)
+                def check(_msg):
+                    return _msg.author == ctx.author and _msg.channel == ctx.message.channel
+
+                msg = await self.bot.wait_for("message", check=check, timeout=120)
             except asyncio.TimeoutError:
                 await ctx.send("You took too long to reply, sorry :/")
                 return
@@ -112,11 +115,10 @@ class ReactionRoles(commands.Cog, name="Reaction roles"):
                 """, [(ctx.guild.id, msg.id, emoji, role_id) for emoji, role_id in emoji_role.items()]
             )
 
-            for emoji in emoji_role.keys():
+            for emoji in emoji_role:
                 await msg.add_reaction(emoji)
 
         await instr.delete()
-
 
 
 def setup(bot):

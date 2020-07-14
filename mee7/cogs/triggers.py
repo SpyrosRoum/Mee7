@@ -1,11 +1,11 @@
 import discord
 from discord.ext import commands
 
-from utils import create_pages, Nembed_triggers
+from utils import create_pages, n_embed_triggers
 
 class Triggers(commands.Cog):
     def __init__(self, bot):
-        self.bot=bot
+        self.bot = bot
 
     @commands.command(brief='Add a new trigger or update an old one')
     @commands.has_permissions(administrator=True)
@@ -68,7 +68,7 @@ class Triggers(commands.Cog):
             )
             await ctx.send(embed=embed)
         else:
-            await create_pages(ctx, triggers, Nembed_triggers, "Triggers closed")
+            await create_pages(ctx, triggers, n_embed_triggers, "Triggers closed")
 
 def setup(bot):
     bot.add_cog(Triggers(bot))

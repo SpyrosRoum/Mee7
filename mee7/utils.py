@@ -3,7 +3,8 @@ import asyncio
 import discord
 from discord.ext import commands
 
-def Nembed_warnings(ctx, page: int, pages: int, members, cur: int):
+
+def n_embed_warnings(ctx, page: int, pages: int, members, cur: int):
     embed = discord.Embed(
         color=ctx.author.color,
         timestamp=ctx.message.created_at
@@ -12,21 +13,21 @@ def Nembed_warnings(ctx, page: int, pages: int, members, cur: int):
 
     # If there somehow is no text, don't error
     text = ""
-    for member_record in members[cur:cur+10]:
+    for member_record in members[cur:cur + 10]:
         member = ctx.guild.get_member(member_record['m_id'])
         if member is None:
             continue
         text += (f"Member: {member.mention}\n"
-                f"Warnings: {member_record['warnings']}\n"
-                f"----------\n")
+                 f"Warnings: {member_record['warnings']}\n"
+                 f"----------\n")
 
     embed.description = text or "None"
-    embed.set_footer(text=f"Page {page+1}/{pages}")
+    embed.set_footer(text=f"Page {page + 1}/{pages}")
 
     return embed, cur
 
 
-def Nembed_rss_feeds(ctx, page: int, pages: int, feeds, cur: int):
+def n_embed_rss_feeds(ctx, page: int, pages: int, feeds, cur: int):
     embed = discord.Embed(
         color=ctx.author.color,
         timestamp=ctx.message.created_at
@@ -40,12 +41,12 @@ def Nembed_rss_feeds(ctx, page: int, pages: int, feeds, cur: int):
                  f"----------\n")
 
     embed.description = text or "None"
-    embed.set_footer(text=f"Page {page+1}/{pages}")
+    embed.set_footer(text=f"Page {page + 1}/{pages}")
 
     return embed, cur
 
 
-def Nembed_triggers(ctx, page: int, pages: int, triggers, cur: int):
+def n_embed_triggers(ctx, page: int, pages: int, triggers, cur: int):
     embed = discord.Embed(
         color=ctx.author.color,
         timestamp=ctx.message.created_at
@@ -59,7 +60,7 @@ def Nembed_triggers(ctx, page: int, pages: int, triggers, cur: int):
                  f"----------\n")
 
     embed.description = text or "None"
-    embed.set_footer(text=f"Page {page+1}/{pages}")
+    embed.set_footer(text=f"Page {page + 1}/{pages}")
 
     return embed, cur
 
@@ -67,7 +68,6 @@ def Nembed_triggers(ctx, page: int, pages: int, triggers, cur: int):
 async def create_pages(ctx, lst, func, end_text):
     pages = 1 + (len(lst) // 10) if (len(lst) % 10) >= 1 else (len(lst) // 10)
     page = 0
-
 
     embed, cur = func(ctx, page, pages, lst, 0)
 
@@ -77,8 +77,8 @@ async def create_pages(ctx, lst, func, end_text):
     await msg.add_reaction('➡')
     await msg.add_reaction('❌')
 
-    def check(r, user):
-        return user != ctx.bot.user and r.message.id == msg.id
+    def check(r, member):
+        return member != ctx.bot.user and r.message.id == msg.id
 
     t_end = time.time() + 120
     while time.time() < t_end:
@@ -94,7 +94,6 @@ async def create_pages(ctx, lst, func, end_text):
             if page == pages:
                 page -= 1
                 continue
-
 
             new_embed, cur = func(ctx, page, pages, lst, cur + 10)
             await msg.edit(embed=new_embed)
@@ -123,12 +122,13 @@ async def create_pages(ctx, lst, func, end_text):
         timestamp=ctx.message.created_at
     )
     embed.set_author(name=end_text,
-                        icon_url=ctx.bot.user.avatar_url)
+                     icon_url=ctx.bot.user.avatar_url)
 
     await msg.edit(embed=embed)
 
+
 async def get_short(bot: commands.Bot, g_id: int) -> str:
-    """return the short for the currency in this server or \"\""""
+    """return the short for the currency in this server or """
     short = await bot.pg_con.fetchval(
         """
         SELECT short
@@ -139,8 +139,9 @@ async def get_short(bot: commands.Bot, g_id: int) -> str:
 
     return short or ""
 
+
 async def get_name(bot: commands.Bot, g_id: int) -> str:
-    """return the name for the currency in this server or \"\""""
+    """return the name for the currency in this server or an empty string"""
     name = await bot.pg_con.fetchval(
         """
         SELECT name

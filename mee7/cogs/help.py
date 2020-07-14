@@ -1,14 +1,15 @@
+import time
+import asyncio
+
 import discord
 from discord.ext import commands
 
-import time
-import asyncio
 
 class Help(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def Nembed(self, ctx, page: int, pages, cogs, cogsD):
+    def n_embed(self, ctx, page: int, pages, cogs, cogs_dict):
         # TODO: Fix ugly embeds
         # TODO Add custom commands
         embed = discord.Embed(
@@ -19,63 +20,59 @@ class Help(commands.Cog):
 
         cog_name = cogs[page].replace("_", " ")
         embed.set_author(
-            name=f"Help - {cog_name} - {len(cogsD[cogs[page]])} command(s)",
+            name=f"Help - {cog_name} - {len(cogs_dict[cogs[page]])} command(s)",
             icon_url=self.bot.user.avatar_url
         )
         embed.set_footer(text=f"Page {page+1}/{pages}")
 
-        for command in cogsD[cogs[page]]:
+        for command in cogs_dict[cogs[page]]:
             aliases = "None" if not command.aliases else [f"`{al}`" for al in command.aliases]
 
-            embed.add_field(
-                name=command.name,
-                value=f"`{ctx.prefix}{command.help}`\n{command.brief}\nAliases: {'None' if aliases == 'None' else ', '.join(aliases)}",
-            )
+            val = (f"`{ctx.prefix}{command.help}`\n"
+                   f"{command.brief}"
+                   f"\nAliases: {'None' if aliases == 'None' else ', '.join(aliases)}")
+            embed.add_field(name=command.name, value=val)
 
         return embed
 
     @commands.command(name="help", aliases=["h"], brief="Display this message", hidden=True)
-    async def help_(self, ctx, *, command=None):
+    async def _help(self, ctx, *, command=None):
         '''help (command)'''
         if not command:
             commands_ = []
-            for command in self.bot.commands:
-                if bool(command.cog_name) and not command.hidden:
+            for _command in self.bot.commands:
+                if bool(_command.cog_name) and not _command.hidden:
                     try:
-                        can_run = await command.can_run(ctx)
+                        can_run = await _command.can_run(ctx)
                     except Exception:
                         can_run = False
                     if can_run:
-                        commands_.append(command)
+                        commands_.append(_command)
 
-            # try:
-            #     commands_ = [c for c in self.bot.commands if bool(c.cog_name) and not c.hidden and await c.can_run(ctx)]
-            # except commands.CheckFailure:
-            #     commands_ = [c for c in self.bot.commands if bool(c.cog_name) and not c.hidden]
-            cogs = [cog for cog in set([command.cog_name for command in commands_])]
+            cogs = list(set(command.cog_name for command in commands_))
 
-            cogsD = {}
+            cogs_dict = {}
             for cog in cogs:
-                cogsD[cog] = []
-                for command in commands_:
+                cogs_dict[cog] = []
+                for _command in commands_:
                     if command.cog_name == cog:
-                        cogsD[cog].append(command)
+                        cogs_dict[cog].append(_command)
 
-            pages = len(cogsD)
+            pages = len(cogs_dict)
             page = 0
 
-            if cogs == []:
+            if not cogs:
                 await ctx.send("It looks like you don't have permissions to run any command")
                 return
-            embed = self.Nembed(ctx, page, pages, cogs, cogsD)
+            embed = self.n_embed(ctx, page, pages, cogs, cogs_dict)
             msg = await ctx.send(embed=embed)
 
             await msg.add_reaction('⬅')
             await msg.add_reaction('➡')
             await msg.add_reaction('❌')
 
-            def check(r, user):
-                return user != self.bot.user and r.message.id == msg.id
+            def check(r, _user):
+                return _user != self.bot.user and r.message.id == msg.id
 
             t_end = time.time() + 300
             while time.time() < t_end:
@@ -94,7 +91,7 @@ class Help(commands.Cog):
                     if page == pages:
                         page -= 1
 
-                    new_embed = self.Nembed(ctx, page, pages, cogs, cogsD)
+                    new_embed = self.n_embed(ctx, page, pages, cogs, cogs_dict)
                     await msg.edit(embed=new_embed)
 
                 elif str(res.emoji) == "⬅":
@@ -107,7 +104,7 @@ class Help(commands.Cog):
                     if page < 0:
                         page = 0
 
-                    new_embed = self.Nembed(ctx, page, pages, cogs, cogsD)
+                    new_embed = self.n_embed(ctx, page, pages, cogs, cogs_dict)
                     await msg.edit(embed=new_embed)
 
                 elif str(res.emoji) == "❌":
@@ -133,7 +130,6 @@ class Help(commands.Cog):
             if isinstance(command, commands.Group):
                 sub_commands = list(command.commands)
 
-
             embed = discord.Embed(
                 description=f"Prefix: `{ctx.prefix}`\n`[argument]` = required, `(argument)` = optional",
                 color=ctx.author.color,
@@ -141,26 +137,25 @@ class Help(commands.Cog):
             )
 
             aliases = "None" if not command.aliases else [f"`{al}`" for al in command.aliases]
-            if command.name not in ["+rep", "-rep"]:
-                embed.add_field(
-                    name=command.name,
-                    value=f"`{ctx.prefix}{command.help}`\n{command.brief}\nAliases: {'None' if aliases == 'None' else ', '.join(aliases)}",
-                )
-            else:
-                embed.add_field(
-                    name=command.name,
-                    value=f"`{command.help}`\n{command.brief}\nAliases: {'None' if aliases == 'None' else ', '.join(aliases)}",
-                )
+            txt = (f"`{ctx.prefix}{command.help}`"
+                   f"\n{command.brief}"
+                   f"\nAliases: {'None' if aliases == 'None' else ', '.join(aliases)}")
+            embed.add_field(
+                name=command.name,
+                value=txt
+            )
 
-            for command in sub_commands:
+            for _command in sub_commands:
+                txt = (f"`{ctx.prefix}{_command.help}`"
+                       f"\n{_command.brief}"
+                       f"\nAliases: {'None' if aliases == 'None' else ', '.join(aliases)}")
                 embed.add_field(
-                    name=f"**{command.name}**",
-                    value=f"`{ctx.prefix}{command.help}`\n{command.brief}\nAliases: {'None' if aliases == 'None' else ', '.join(aliases)}",
+                    name=f"**{_command.name}**",
+                    value=txt,
                     inline=False
                 )
 
             await ctx.send(embed=embed)
-
 
 
 def setup(bot):

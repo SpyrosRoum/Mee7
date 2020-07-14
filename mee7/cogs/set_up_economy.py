@@ -1,8 +1,8 @@
 import asyncio
 
-from utils import get_name
-
 from discord.ext import commands
+
+from utils import get_name
 
 
 class SetUpEco(commands.Cog, name="Set up Economy"):
@@ -12,7 +12,6 @@ class SetUpEco(commands.Cog, name="Set up Economy"):
     @commands.group(invoke_without_command=True, brief="Configure economy related commands", name="set")
     async def set_(self, ctx):
         """set [command]"""
-        pass
 
     @set_.command(brief='Set the currency name for the server. The `short` by default is same to the name')
     @commands.has_permissions(administrator=True)
@@ -92,11 +91,11 @@ class SetUpEco(commands.Cog, name="Set up Economy"):
     async def set_min_max(self, g_id, cmd_name, min_, max_):
         await self.bot.pg_con.execute(
             """
-            INSERT INTO eco_settings (g_id, cmd_name, min, max) 
+            INSERT INTO eco_settings (g_id, cmd_name, min, max)
                  VALUES ($1, $2, $3, $4)
             ON CONFLICT (g_id, cmd_name)
-            DO 
-                UPDATE 
+            DO
+                UPDATE
                    SET (min, max) = (excluded.min, excluded.max)
             """, g_id, cmd_name, min_, max_
         )
@@ -152,8 +151,6 @@ class SetUpEco(commands.Cog, name="Set up Economy"):
 
         cur_name = await get_name(self.bot, ctx.guild.id)
         await ctx.send(f"`crime` will now reward between {min_} and {max_} {cur_name}")
-
-
 
 
 def setup(bot):

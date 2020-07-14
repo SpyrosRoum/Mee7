@@ -6,7 +6,40 @@ from discord.ext import commands
 import feedparser
 import aiohttp
 
-from utils import create_pages, Nembed_rss_feeds
+from utils import create_pages, n_embed_rss_feeds
+
+
+def format_html(text):
+    text = text.replace("<p>", "    ")
+    text = text.replace("<\\p>", "\n")
+    text = text.replace("<\\br>", "\n")
+    return text
+
+
+async def send_entry(entry, chn: discord.TextChannel):
+    embed = discord.Embed(
+        title=entry['title'],
+        description=format_html(entry['summary']),
+        url=entry['link'],
+    )
+
+    if len(embed) > 1970:
+        embed = discord.Embed(
+            title=entry['title'],
+            description=entry['summary'][:1900] + "...",
+            url=entry['link'],
+        )
+    await chn.send(embed=embed)
+
+
+async def get_feed(feed_url):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(feed_url) as resp:
+            if resp.status != 200:
+                return None
+
+            data = await resp.read()
+    return feedparser.parse(data)
 
 
 class Rss(commands.Cog):
@@ -15,31 +48,10 @@ class Rss(commands.Cog):
 
         self.bot.loop.create_task(self.update_feeds())
 
-    def format_html(self, text):
-        text = text.replace("<p>", "    ")
-        text = text.replace("<\\p>", "\n")
-        text = text.replace("<\\br>", "\n")
-        return text
-
-    async def send_entry(self, entry, chn: discord.TextChannel):
-        embed = discord.Embed(
-            title=entry['title'],
-            description=self.format_html(entry['summary']),
-            url=entry['link'],
-        )
-
-        if len(embed) > 1970:
-            embed = discord.Embed(
-                title=entry['title'],
-                description=entry['summary'][:1900]+"...",
-                url=entry['link'],
-            )
-        await chn.send(embed=embed)
-
-    async def update_feed(self, feed_record = None, g_id = None, feed: feedparser.FeedParserDict = None, feed_id = None):
+    async def update_feed(self, feed_record=None, g_id=None, feed: feedparser.FeedParserDict = None, feed_id=None):
         if feed_record is not None:
             feed_id = feed_record['feed_id']
-            feed = await self.get_feed(feed_record['feed_link'])
+            feed = await get_feed(feed_record['feed_link'])
             if feed is None:
                 return
 
@@ -52,8 +64,9 @@ class Rss(commands.Cog):
                 WHERE g_id = $1
             """, g_id
         )
-        if chn_id is None:
+        if not chn_id:
             return
+
         chn = self.bot.get_channel(chn_id)
         if chn is None:
             return
@@ -66,11 +79,11 @@ class Rss(commands.Cog):
             """, feed_id
         )
 
-        if last_entries == []:
+        if not last_entries:
             for i, entry in enumerate(feed.entries):
                 if i == 4:
                     break
-                await self.send_entry(entry, chn)
+                await send_entry(entry, chn)
                 await asyncio.sleep(.25)
 
             e = feed.entries
@@ -78,7 +91,9 @@ class Rss(commands.Cog):
                 """
                 INSERT INTO rss_entries (feed_id, entry_id, title, summary, link, published)
                      VALUES ($1, $2, $3, $4, $5, $6)
-                """, [(feed_id, e[i]['id'], e[i]['title'], e[i]['summary'], e[i]['link'], e[i]['published']) for i in range(4)]
+                """,
+                [(feed_id, e[i]['id'], e[i]['title'], e[i]['summary'], e[i]['link'], e[i]['published']) for i in
+                 range(4)]
             )
         else:
             to_send = []
@@ -86,14 +101,13 @@ class Rss(commands.Cog):
                 ids = [past_entry['entry_id'] for past_entry in last_entries]
                 if entry['id'] in ids:
                     break
-                else:
-                    to_send.append(entry)
+                to_send.append(entry)
 
-            if len(to_send) == 0:
+            if not to_send:
                 return
 
             for entry in to_send:
-                await self.send_entry(entry, chn)
+                await send_entry(entry, chn)
                 await asyncio.sleep(.25)
 
             if len(to_send) >= 4:
@@ -131,7 +145,7 @@ class Rss(commands.Cog):
                  WHERE rss_chn_id IS NOT NULL
                 """
             )
-            if guilds_to_update == []:
+            if not guilds_to_update:
                 await asyncio.sleep(3600)
                 continue
 
@@ -149,21 +163,12 @@ class Rss(commands.Cog):
 
             await asyncio.sleep(3600)
 
-    async def get_feed(self, feed_url):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(feed_url) as resp:
-                if resp.status != 200:
-                    return None
-
-                data = await resp.read()
-        return feedparser.parse(data)
-
     @commands.command(brief="Add an rss feed. If no name is given, the title from the feed will be used")
     @commands.has_permissions(administrator=True)
     async def rss_add(self, ctx, link, *, name=None):
         """rss_add [link] (name)"""
         for _ in range(2):
-            feed = await self.get_feed(link)
+            feed = await get_feed(link)
             if feed is not None:
                 break
         else:
@@ -182,7 +187,8 @@ class Rss(commands.Cog):
             RETURNING feed_id
             """, ctx.guild.id, name, link
         )
-        await ctx.send("If you have set an rss channel for your server, you will get updates for this feed starting.. now")
+        txt = "If you have set an rss channel for your server, you will get updates for this feed starting.. now"
+        await ctx.send(txt)
         await self.update_feed(g_id=ctx.guild.id, feed=feed, feed_id=feed_id)
 
     @commands.command(aliases=['rss_rem', 'rss_rm'], brief="Remove an rss feed based on link")
@@ -221,7 +227,7 @@ class Rss(commands.Cog):
              WHERE g_id = $1
             """, ctx.guild.id
         )
-        if feeds == []:
+        if not feeds:
             embed = discord.Embed(
                 color=ctx.author.color,
                 timestamp=ctx.message.created_at,
@@ -230,11 +236,7 @@ class Rss(commands.Cog):
             await ctx.send(embed=embed)
             return
 
-        await create_pages(ctx, feeds, Nembed_rss_feeds, "Feeds closed")
-
-
-
-
+        await create_pages(ctx, feeds, n_embed_rss_feeds, "Feeds closed")
 
 
 def setup(bot):

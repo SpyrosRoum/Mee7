@@ -1,7 +1,7 @@
-from utils import get_short
-
 import discord
 from discord.ext import commands
+
+from utils import get_short
 
 
 class Economy(commands.Cog):
@@ -14,11 +14,11 @@ class Economy(commands.Cog):
         """reward [member] [amount]"""
         new_money = await self.bot.pg_con.fetchval(
             """
-            INSERT INTO members (g_id, m_id, money) 
+            INSERT INTO members (g_id, m_id, money)
                  VALUES ($1, $2)
             ON CONFLICT (g_id, m_id, (100 + $3))
             DO
-                UPDATE 
+                UPDATE
                    SET money = money + excluded.money
             RETURNING money
             """, ctx.guild.id, member.id, amount

@@ -1,4 +1,3 @@
-import discord
 from discord.ext import commands
 
 
@@ -8,7 +7,7 @@ class Errors(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, exception):
-        if isinstance(exception, commands.BadArgument) or isinstance(exception, commands.MissingRequiredArgument):
+        if isinstance(exception, (commands.BadArgument, commands.MissingRequiredArgument)):
             await ctx.send("Invalid or missing arguments")
         elif isinstance(exception, commands.CheckFailure):
             if ctx.command.name.lower() not in  ['help']:
@@ -17,7 +16,8 @@ class Errors(commands.Cog):
             print(f"Command {ctx.message.content} not found")
             return
         elif isinstance(exception, commands.CommandOnCooldown):
-            await ctx.send(f"Chill out {ctx.author.display_name}, maybe try again in {round(exception.retry_after/60)} minutes")
+            txt = f"Chill out {ctx.author.display_name}, maybe try again in {round(exception.retry_after/60)} minutes"
+            await ctx.send(txt)
 
 
 def setup(bot):

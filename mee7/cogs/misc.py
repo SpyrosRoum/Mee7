@@ -4,7 +4,7 @@ from discord.ext import commands
 
 class Misc(commands.Cog):
     def __init__(self, bot):
-        self.bot=bot
+        self.bot = bot
 
     @commands.command(brief="Make a suggestion for the server")
     async def suggest(self, ctx, *, suggestion):
@@ -43,6 +43,7 @@ class Misc(commands.Cog):
                  VALUES ($1, $2, $3, $4)
             """, ctx.guild.id, ctx.author.id, msg.id, summary
         )
+
 
 def setup(bot):
     bot.add_cog(Misc(bot))

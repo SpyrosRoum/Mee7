@@ -1,14 +1,52 @@
 import asyncio
+from typing import Dict, Callable
 
-import discord
 from discord.ext import commands
+
+
+def period_to_seconds(period, number):
+    if period in ['sec', 'second', 'seconds']:
+        return number
+    if period in ['min', 'minute', 'minutes']:
+        return number * 60
+    if period in ['hour', 'hours']:
+        return number * 60 * 60
+
+    return None
+
+
+async def invalid_type(ctx):
+    await ctx.send("I don't support that type of commands")
+
+
+def process_cooldown(cooldown: str):
+    """
+    cooldown should be in the form of:
+    int seconds/minutes/days
+    """
+    cooldown = cooldown.split()
+    if len(cooldown) > 2:
+        return None
+
+    try:
+        number = int(cooldown[0])
+        if number <= 0:
+            raise ValueError
+    except ValueError:
+        return None
+
+    time_period = cooldown[1].lower()
+    if time_period not in ['sec', 'second', 'seconds', 'min', 'minute', 'minutes', 'hour', 'hours']:
+        return None
+
+    return period_to_seconds(time_period, number)
 
 
 class CustomCommands(commands.Cog, name="Custom Commands"):
     def __init__(self, bot):
-        self.bot=bot
+        self.bot = bot
 
-        self.types = {
+        self.types: Dict[str, Callable] = {
             'text': self.add_text_command,
         }
 
@@ -16,12 +54,12 @@ class CustomCommands(commands.Cog, name="Custom Commands"):
     @commands.has_permissions(administrator=True)
     async def add_command(self, ctx, type_):
         """add [type]"""
-        await (self.types.get(type_.lower(), self.invalid_type))(ctx)
+        await (self.types.get(type_.lower(), invalid_type))(ctx)
 
     async def exists(self, guild_id, name):
         for command in self.bot.walk_commands():
             if command.name == name or name in command.aliases:
-                return (True, False) # Exists and is not custom
+                return True, False  # Exists and is not custom
         cmd = await self.bot.pg_con.fetchval(
             """
             SELECT cmd_name
@@ -33,41 +71,12 @@ class CustomCommands(commands.Cog, name="Custom Commands"):
         if cmd is None:
             return False
         else:
-            return (True, True) # Exists and is custom
-
-    def process_cooldown(self, cooldown: str):
-        """
-        cooldown should be in the form of:
-        int seconds/minutes/days
-        """
-        cooldown = cooldown.split()
-        if len(cooldown) > 2:
-            return None
-
-        try:
-            number = int(cooldown[0])
-            if number <= 0:
-                raise ValueError
-        except ValueError:
-            return None
-
-        if (time_period := cooldown[1].lower()) not in ['sec', 'second', 'seconds', 'min', 'minute', 'minutes', 'hour', 'hours']:
-            return None
-
-        return self.period_to_seconds(time_period, number)
-
-    def period_to_seconds(self, period, number):
-        if period in ['sec', 'second', 'seconds']:
-            return number
-        if period in ['min', 'minute', 'minutes']:
-            return number * 60
-        if period in ['hour', 'hours']:
-            return number * 60 * 60
-
+            return True, True  # Exists and is custom
 
     async def get_basic_command_info(self, ctx):
         def check(msg):
             return msg.author.id == ctx.author.id and msg.channel.id == ctx.channel.id
+
         try:
             await ctx.send("What will the __command name__ be? (case sensitive)")
             name = (await self.bot.wait_for('message', timeout=30.0, check=check)).content
@@ -91,9 +100,10 @@ class CustomCommands(commands.Cog, name="Custom Commands"):
                 cooldown = (await self.bot.wait_for('message', timeout=30.0, check=check)).content
 
                 # Get cooldown in seconds
-                cooldown = self.process_cooldown(cooldown)
+                cooldown = process_cooldown(cooldown)
                 if cooldown is None:
-                    await ctx.send(f"Invalid input `{cooldown}`. There will be no cooldown for now but you can edit it later")
+                    txt = f"Invalid input `{cooldown}`. There will be no cooldown for now but you can edit it later"
+                    await ctx.send(txt)
             else:
                 cooldown = None
 
@@ -108,6 +118,7 @@ class CustomCommands(commands.Cog, name="Custom Commands"):
     async def add_text_command(self, ctx):
         def check(msg):
             return msg.author.id == ctx.author.id and msg.channel.id == ctx.channel.id
+
         try:
             name, description, cooldown = await self.get_basic_command_info(ctx)
 
@@ -133,8 +144,6 @@ class CustomCommands(commands.Cog, name="Custom Commands"):
         except asyncio.TimeoutError:
             await ctx.send("You didn't reply fast enough, sorry, you will have to do it again")
 
-    async def invalid_type(self, ctx):
-        await ctx.send("I don't support that type of commands")
 
 def setup(bot):
     bot.add_cog(CustomCommands(bot))

@@ -1,5 +1,3 @@
-import asyncio
-
 import discord
 from discord.ext import commands
 
@@ -14,11 +12,10 @@ class SetUp(commands.Cog, name="Set up"):
     @commands.has_permissions(administrator=True)
     async def welcome(self, ctx):
         """welcome [sub command]"""
-        pass
 
     @welcome.command(aliases=['chn'], brief='Set the channel for the welcome message')
     @commands.has_permissions(administrator=True)
-    async def channel(self, ctx, channel: discord.TextChannel=None):
+    async def channel(self, ctx, channel: discord.TextChannel = None):
         """welcome channel (channel)"""
         if channel is None:
             await self.bot.pg_con.execute(
@@ -46,7 +43,7 @@ class SetUp(commands.Cog, name="Set up"):
             )
 
             await ctx.send(f"{channel.mention} will be used for the welcome message."
-                        f"Use `{ctx.prefix}welcome message` for the message")
+                           f"Use `{ctx.prefix}welcome message` for the message")
 
     @welcome.command(aliases=['msg'], brief='Set the welcome message')
     @commands.has_permissions(administrator=True)
@@ -67,7 +64,7 @@ class SetUp(commands.Cog, name="Set up"):
 
     @welcome.command(brief='Set the role for people who join, leave empty to de-activate it')
     @commands.has_permissions(administrator=True)
-    async def role(self, ctx, role: discord.Role=None):
+    async def role(self, ctx, role: discord.Role = None):
         """welcome role (role)"""
         await self.bot.pg_con.execute(
             """
@@ -91,7 +88,7 @@ class SetUp(commands.Cog, name="Set up"):
 
     @commands.command(brief='Set the suggestions channel, leave empy to remove it')
     @commands.has_permissions(administrator=True)
-    async def suggestions_chn(self, ctx, channel: discord.TextChannel=None):
+    async def suggestions_chn(self, ctx, channel: discord.TextChannel = None):
         """suggestions_chn (channel)"""
         await self.bot.pg_con.execute(
             """
